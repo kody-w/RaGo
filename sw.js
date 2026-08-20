@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapp-go-v2.1.0';
+const CACHE_NAME = 'rago-v2.2.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -15,9 +15,11 @@ const APP_SHELL = [
   './src/game/economy.js',
   './src/game/spawns.js',
   './src/companion/evolution.js',
+  './src/lib/allele.js',
   './src/lib/creature.js',
   './src/lib/geo.js',
   './src/lib/moment.js',
+  './src/lib/rapp.js',
   './src/lib/rng.js',
   './src/services/places.js',
   './src/services/storage.js',

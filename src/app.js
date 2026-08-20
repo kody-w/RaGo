@@ -1,8 +1,18 @@
 import {
+  createLineage,
+  createParallelOffspring,
   createCompanionProfile,
+  currentFrame,
   currentCompanion,
   evolveCompanion,
-  revertCompanion
+  freezeRappid,
+  lineageGenerations,
+  migrateLegacyProfile,
+  revertCompanion,
+  selectOrganism,
+  selectedOrganism,
+  upsertOrganism,
+  wakeRappid
 } from './companion/evolution.js';
 import { rollCatch, throwQuality } from './game/catch.js';
 import {
@@ -55,6 +65,7 @@ const state = {
   spawns: [],
   collection: [],
   companion: null,
+  lineage: null,
   inventory: store.getInventory(),
   spinState: store.get('spins', {}),
   lureState: store.get('lures', {}),
@@ -142,7 +153,26 @@ function persistInventory() {
 function updateCounts() {
   $('bag-count').textContent = inventoryCount(state.inventory);
   $('collection-count').textContent = state.collection.length;
-  $('generation-count').textContent = Math.max(0, (state.companion?.frames?.length || 1) - 1);
+  $('generation-count').textContent = state.companion?.generation || 0;
+  $('lineage-count').textContent = state.lineage?.organisms?.length || 0;
+}
+
+async function persistOrganism(profile, { select = true } = {}) {
+  state.lineage = state.lineage
+    ? upsertOrganism(state.lineage, profile, { select })
+    : createLineage(profile);
+  state.companion = selectedOrganism(state.lineage);
+  await companionStore.setLineage(state.lineage);
+  updateCounts();
+  return state.companion;
+}
+
+async function chooseRappid(rappid) {
+  state.lineage = selectOrganism(state.lineage, rappid);
+  state.companion = selectedOrganism(state.lineage);
+  await companionStore.setLineage(state.lineage);
+  renderCompanion();
+  renderLineage();
 }
 
 function updateWeatherPill() {
@@ -286,14 +316,19 @@ function introMarkup() {
   const demoLead = state.demo ? 'The demo uses a fixed Manhattan field and never asks for location.' : 'Choose a live local field or a deterministic, offline-friendly demo.';
   return `<div class="onboarding-wrap">
     <div class="onboarding-orbit" aria-hidden="true"><span>◉</span></div>
-    <p class="eyebrow">a private moment field</p>
-    <h1 id="onboarding-title">Capture a moment. Grow one companion.</h1>
-    <p class="onboarding-lead">A thought, picture, sound, place, time, or sky can take a living 3D form. Caught moments can change your companion without replacing who it is. ${demoLead}</p>
-    <div class="onboarding-actions">
-      <button class="primary-button" id="onboard-location" type="button">Use my location</button>
-      <button class="secondary-button" id="onboard-demo" type="button">${state.demo ? 'Enter the demo field' : 'Try the private demo'}</button>
+    <p class="eyebrow">the RAPPID field guide</p>
+    <h1 id="onboarding-title">Welcome to RaGo. Meet the RAPPIDs.</h1>
+    <p class="onboarding-lead">RAPPIDs are living, local-first beings. Every one has a mint-once identity, grows through immutable frames, and may create independent offspring without erasing its own life. ${demoLead}</p>
+    <div class="rappid-primer">
+      <article class="primer-card"><span>◉</span><strong>Identity stays</strong><p>A RAPPID receives one identity. Its body can evolve, but its address remains its own.</p></article>
+      <article class="primer-card"><span>▤</span><strong>Frames remember</strong><p>Every meaningful change appends a verified frame. Earlier forms remain reachable.</p></article>
+      <article class="primer-card"><span>∞</span><strong>Offspring branch</strong><p>A child starts from one exact parent head, then lives forward on an independent stream.</p></article>
     </div>
-    <p class="onboarding-fineprint">No sign-in. No analytics. Exact coordinates and private memories stay on this device.</p>
+    <div class="onboarding-actions">
+      <button class="primary-button" id="onboard-location" type="button">Enter my local field</button>
+      <button class="secondary-button" id="onboard-demo" type="button">${state.demo ? 'Enter the demo field' : 'Meet starter RAPPIDs in demo'}</button>
+    </div>
+    <p class="onboarding-fineprint">No sign-in, personal profile, analytics, ads, or backend. Exact coordinates and private memories stay on this device.</p>
   </div>`;
 }
 
@@ -333,7 +368,7 @@ function localDateTimeValue(milliseconds) {
 
 function memoryFormMarkup() {
   return `<div class="onboarding-wrap memory-ceremony">
-    <div class="starter-heading"><p class="eyebrow">the memory ceremony</p><h1 id="onboarding-title">What should your companion begin by remembering?</h1><p>Use any part of the moment. Picture and sound are reduced to traits and released; the words stay private on this device.</p></div>
+    <div class="starter-heading"><p class="eyebrow">the starter bond</p><h1 id="onboarding-title">What should your starter RAPPID begin by remembering?</h1><p>This private signal calls three possible starters. Picture and sound are reduced to traits and released; raw words stay on this device.</p></div>
     <form class="moment-form onboarding-moment-form" id="onboarding-memory-form">
       <label><span>Name this memory</span><input name="label" maxlength="120" value="the moment I began"></label>
       <label><span>A thought, phrase, or person</span><textarea name="thought" maxlength="2000" rows="3" placeholder="what should it carry with you?"></textarea></label>
@@ -348,7 +383,7 @@ function memoryFormMarkup() {
       <label><span>Place name (private)</span><input name="placeLabel" maxlength="120" placeholder="the kitchen at midnight"></label>
       <label class="weather-check"><input name="weather" type="checkbox" checked><span>Let the weather at this place color the memory</span></label>
       <p class="capture-status" id="onboarding-memory-status" role="status"></p>
-      <button class="primary-button" type="submit">Call three possible companions</button>
+      <button class="primary-button" type="submit">Reveal three starter RAPPIDs</button>
     </form>
   </div>`;
 }
@@ -406,7 +441,7 @@ async function showMemoryCeremony(locationPoint) {
 
 async function showStarters(locationPoint, memory) {
   const content = $('onboarding-content');
-  content.innerHTML = `<div class="onboarding-wrap"><div class="onboarding-orbit" aria-hidden="true"><span>◌</span></div><h1 id="onboarding-title">Giving the memory three possible bodies…</h1><p class="onboarding-lead">Picture, sound, thought, place, time, and weather each pull on different traits.</p></div>`;
+  content.innerHTML = `<div class="onboarding-wrap"><div class="onboarding-orbit" aria-hidden="true"><span>◌</span></div><h1 id="onboarding-title">Calling three starter RAPPIDs…</h1><p class="onboarding-lead">Picture, sound, thought, place, time, and weather each pull on different species and traits.</p></div>`;
   const weather = memory.weather;
   const cell = geohashEncode(locationPoint.lat, locationPoint.lng, 6);
   const bucket = Math.floor(sessionNow() / (30 * 60 * 1000));
@@ -423,7 +458,7 @@ async function showStarters(locationPoint, memory) {
   })));
 
   content.innerHTML = `<div class="onboarding-wrap">
-    <div class="starter-heading"><p class="eyebrow">one memory · three interpretations</p><h1 id="onboarding-title">Choose the one that feels like the memory.</h1><p>It becomes your one permanent companion. Later moments may change its traits, never its identity.</p></div>
+    <div class="starter-heading"><p class="eyebrow">your first RAPPID</p><h1 id="onboarding-title">Choose your starter RAPPID.</h1><p>Each candidate interprets the same private memory differently. Your choice becomes generation zero—the ancestor of every branch you may grow.</p></div>
     <div class="starter-grid" id="starter-grid"></div>
   </div>`;
   const grid = $('starter-grid');
@@ -440,27 +475,30 @@ async function showStarters(locationPoint, memory) {
     const choose = document.createElement('button');
     choose.className = 'primary-button';
     choose.type = 'button';
-    choose.textContent = `Choose ${creature.name}`;
+    choose.textContent = `Choose ${creature.name} as my starter`;
     choose.addEventListener('click', async () => {
       choose.disabled = true;
-      await collectionStore.put(creature, {
+      const profile = await createCompanionProfile(
+        creature,
+        { ...memory.privateMemory, sources: memory.publicSignal.sources },
+        { now: sessionNow() }
+      );
+      const starterRappid = currentCompanion(profile);
+      await collectionStore.put(starterRappid, {
         capturedAt: sessionNow(),
         capture: { kind: 'starter', memoryLabel: memory.privateMemory.label, sources: memory.publicSignal.sources, cell }
       });
-      state.companion = await createCompanionProfile(
-        creature,
-        { ...memory.privateMemory, sources: memory.publicSignal.sources },
-        { now: sessionNow(), companionId: state.demo ? `companion-demo-${creature.id}` : null }
-      );
-      await companionStore.set(state.companion);
-      store.set('profile', { onboarded: true, starterId: creature.id, companionId: state.companion.companionId, startedAt: sessionNow() });
+      state.lineage = createLineage(profile);
+      state.companion = profile;
+      await companionStore.setLineage(state.lineage);
+      store.set('profile', { onboarded: true, starterId: starterRappid.id, rappid: profile.rappid, startedAt: sessionNow() });
       for (const renderer of state.starterRenderers) renderer.dispose();
       state.starterRenderers = [];
       state.collection = await collectionStore.list();
       closeDialog($('onboarding-dialog'));
       await initializeWorld(locationPoint);
       renderCompanion();
-      toast(`${creature.name} became your companion.`);
+      toast(`${starterRappid.name} became your starter RAPPID.`);
       await processIncomingCreature();
     });
     card.append(canvas, heading, copy, choose);
@@ -846,26 +884,29 @@ function renderEvolutionTimeline() {
   const frames = state.companion?.frames || [];
   for (const [reverseIndex, frame] of [...frames].reverse().entries()) {
     const isCurrent = reverseIndex === 0;
+    const event = frame.payload.event;
+    const creature = frame.payload.creature;
     const item = document.createElement('article');
     item.className = 'evolution-frame';
     const icon = document.createElement('span');
     icon.className = 'frame-icon';
-    icon.textContent = frame.kind === 'birth' ? '◉' : frame.kind === 'splice' ? '🧬' : '↶';
+    icon.textContent = event === 'birth' ? '◉' : event === 'splice' ? '🧬' : event === 'freeze' ? '❄' : event === 'wake' ? '↟' : '↶';
     const copy = document.createElement('div');
     const heading = document.createElement('h3');
-    heading.textContent = `${frame.kind} · ${frame.creature.name}`;
+    heading.textContent = `${event} · ${creature.name}`;
     const note = document.createElement('p');
-    note.textContent = `${frame.note} · ${frame.sha.slice(0, 8)}`;
+    note.textContent = `${state.companion.localNotes?.[frame.frame_hash] || 'verified body frame'} · ${frame.frame_hash.slice(0, 8)}`;
     copy.append(heading, note);
     const button = document.createElement('button');
     button.type = 'button';
     button.disabled = isCurrent;
     button.textContent = isCurrent ? 'current' : 'return here';
     button.addEventListener('click', async () => {
-      state.companion = await revertCompanion(state.companion, frame.sha, Date.now());
-      await companionStore.set(state.companion);
+      const reverted = await revertCompanion(state.companion, frame.frame_hash, Date.now());
+      await persistOrganism(reverted);
       renderCompanion();
-      toast('The companion returned to an earlier form. Nothing was erased.');
+      renderLineage();
+      toast('The RAPPID returned to an earlier form. Nothing was erased.');
     });
     item.append(icon, copy, button);
     timeline.append(item);
@@ -881,27 +922,149 @@ function renderCompanion() {
   $('companion-name').textContent = creature.name;
   $('companion-memory').textContent = state.companion.memory?.thought
     ? `${state.companion.memory.label} — “${state.companion.memory.thought.slice(0, 180)}”`
-    : state.companion.memory?.label || 'A private memory began this companion.';
-  $('companion-id').textContent = state.companion.companionId;
+    : state.companion.memory?.label || 'A private memory began this RAPPID.';
+  $('companion-id').textContent = state.companion.rappid;
+  $('companion-id').title = state.companion.rappid;
   $('companion-genome').textContent = creature.id;
   $('companion-frame-count').textContent = state.companion.frames.length;
-  const generation = Math.max(0, state.companion.frames.filter((frame) => frame.kind === 'splice').length);
-  $('companion-generation').textContent = `generation ${generation} · ${speciesLabel(creature)} · ${creature.distinctiveTrait}`;
+  const frame = currentFrame(state.companion);
+  const glow = frame?.payload?.alleles?.glow?.tier?.name || creature.rarity;
+  $('companion-generation').textContent = `generation ${state.companion.generation} · frame ${frame?.seq || 0} · ${glow} glow · ${speciesLabel(creature)}`;
+  $('companion-freeze-button').textContent = state.companion.status === 'frozen'
+    ? 'Wake from latest head'
+    : 'Freeze at latest head';
   renderCompanionSources();
   renderCompanionDonors();
   renderEvolutionTimeline();
   updateCounts();
 }
 
+function renderLineage() {
+  const summary = $('lineage-summary');
+  const graph = $('lineage-graph');
+  summary.replaceChildren();
+  graph.replaceChildren();
+  if (!state.lineage?.organisms?.length) return;
+  const generations = lineageGenerations(state.lineage);
+  const maxGeneration = Math.max(...state.lineage.organisms.map((organism) => organism.generation));
+  const stats = [
+    `${state.lineage.organisms.length} living RAPPID${state.lineage.organisms.length === 1 ? '' : 's'}`,
+    `${maxGeneration + 1} generation${maxGeneration ? 's' : ''}`,
+    `${state.lineage.organisms.filter((organism) => organism.status === 'frozen').length} frozen`,
+    `ancestor ${state.lineage.ancestorHash.slice(0, 10)}`
+  ];
+  for (const value of stats) {
+    const pill = document.createElement('span');
+    pill.className = 'lineage-stat';
+    pill.textContent = value;
+    summary.append(pill);
+  }
+  for (const group of generations) {
+    const section = document.createElement('section');
+    section.className = 'lineage-generation';
+    const heading = document.createElement('h3');
+    heading.textContent = group.generation === 0 ? 'generation 0 · ancestor' : `generation ${group.generation}`;
+    const column = document.createElement('div');
+    column.className = 'lineage-column';
+    for (const organism of group.organisms) {
+      const creature = currentCompanion(organism);
+      const frame = currentFrame(organism);
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = `rappid-card${organism.rappid === state.lineage.selectedRappid ? ' selected' : ''}`;
+      card.setAttribute('aria-label', `Select ${creature.name}, generation ${organism.generation}, ${organism.status}`);
+      const canvas = document.createElement('canvas');
+      canvas.width = 140;
+      canvas.height = 140;
+      canvas.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('span');
+      const name = document.createElement('strong');
+      name.textContent = creature.name;
+      const status = document.createElement('span');
+      status.className = organism.status;
+      status.textContent = `${organism.status} · head ${frame.frame_hash.slice(0, 7)}`;
+      const mutation = document.createElement('span');
+      mutation.textContent = frame.payload.mutation?.dimensions?.join(' + ') || 'starter ancestor';
+      copy.append(name, status, mutation);
+      card.append(canvas, copy);
+      card.addEventListener('click', async () => {
+        await chooseRappid(organism.rappid);
+        toast(`${creature.name} is now the selected RAPPID.`);
+      });
+      column.append(card);
+      requestAnimationFrame(() => drawCreatureFrame(canvas, creature, hashString(creature.id), { aura: false }));
+    }
+    section.append(heading, column);
+    graph.append(section);
+  }
+}
+
+async function drillParallelOffspring() {
+  if (!state.companion || !state.lineage) return;
+  if (state.companion.status === 'frozen') {
+    toast('Wake the selected RAPPID before drilling offspring.');
+    return;
+  }
+  const dimensions = [...document.querySelectorAll('input[name="offspring-dimension"]:checked')]
+    .map((input) => input.value);
+  if (!dimensions.length) {
+    toast('Choose at least one dimension.');
+    return;
+  }
+  const count = Number($('offspring-count').value);
+  const button = $('drill-button');
+  button.disabled = true;
+  button.textContent = 'Drilling parallel frames…';
+  try {
+    const children = await createParallelOffspring(state.companion, dimensions, count, { now: Date.now() });
+    for (const child of children) state.lineage = upsertOrganism(state.lineage, child, { select: false });
+    state.lineage = selectOrganism(state.lineage, children[0].rappid);
+    state.companion = selectedOrganism(state.lineage);
+    await companionStore.setLineage(state.lineage);
+    renderCompanion();
+    renderLineage();
+    updateCounts();
+    toast(`${children.length} parallel offspring woke. Every parent and sibling remains alive.`);
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Drill from selected head';
+  }
+}
+
+async function toggleSelectedRappid() {
+  if (!state.companion) return;
+  const button = $('companion-freeze-button');
+  button.disabled = true;
+  try {
+    const next = state.companion.status === 'frozen'
+      ? await wakeRappid(state.companion, Date.now())
+      : await freezeRappid(state.companion, Date.now());
+    await persistOrganism(next);
+    renderCompanion();
+    renderLineage();
+    toast(`${currentCompanion(next).name} ${next.status === 'awake' ? 'woke from' : 'froze at'} its latest verified head.`);
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function openSplice(donor) {
   const primary = currentCompanion(state.companion);
   if (!primary || !donor) {
-    toast('A companion and a captured moment are both required.');
+    toast('A selected RAPPID and a captured donor are both required.');
+    return;
+  }
+  if (state.companion.status === 'frozen') {
+    toast('Wake the selected RAPPID before splicing traits.');
     return;
   }
   state.spliceDonor = donor;
-  $('splice-title').textContent = `Splice ${donor.name} into your companion`;
-  $('splice-copy').textContent = `${momentSourceLabel(donor.genome.moment)} can lend selected traits while ${state.companion.companionId.slice(0, 20)}… remains the same identity.`;
+  $('splice-title').textContent = `Splice ${donor.name} into your selected RAPPID`;
+  $('splice-copy').textContent = `${momentSourceLabel(donor.genome.moment)} can lend selected traits while ${state.companion.rappid.slice(0, 28)}… remains the same identity.`;
   $('splice-donor-name').textContent = donor.name;
   for (const input of document.querySelectorAll('input[name="splice-trait"]')) input.checked = input.value === 'surface';
   drawCreatureFrame($('splice-primary'), primary, hashString(primary.id));
@@ -920,13 +1083,14 @@ async function applySplice() {
   button.disabled = true;
   button.textContent = 'Absorbing the moment…';
   try {
-    state.companion = await evolveCompanion(state.companion, state.spliceDonor, traits, Date.now());
-    await companionStore.set(state.companion);
+    const evolved = await evolveCompanion(state.companion, state.spliceDonor, traits, Date.now());
+    await persistOrganism(evolved);
     closeDialog($('splice-dialog'));
     closeEncounter();
     switchView('companion');
     renderCompanion();
-    toast(`Your companion absorbed ${traits.join(' + ')} from ${state.spliceDonor.name}.`);
+    renderLineage();
+    toast(`Your RAPPID absorbed ${traits.join(' + ')} from ${state.spliceDonor.name}.`);
   } finally {
     button.disabled = false;
     button.textContent = 'Absorb selected traits';
@@ -1040,8 +1204,8 @@ async function nativeShare() {
   if (!navigator.share || !state.shareCreature) return;
   try {
     await navigator.share({
-      title: `${state.shareCreature.name} from rapp·go`,
-      text: 'A verified captured moment is waiting for you.',
+      title: `${state.shareCreature.name} from RaGo`,
+      text: 'A verified captured RAPPID is waiting for you.',
       url: $('share-url').value
     });
   } catch {}
@@ -1099,6 +1263,7 @@ function switchView(view) {
   const views = {
     explore: $('explore-view'),
     companion: $('companion-view'),
+    lineage: $('lineage-view'),
     collection: $('collection-view'),
     bag: $('bag-view')
   };
@@ -1112,29 +1277,43 @@ function switchView(view) {
   $('app').dataset.view = view;
   if (view === 'companion') renderCompanion();
   else state.companionRenderer?.stop();
+  if (view === 'lineage') renderLineage();
   if (view === 'collection') renderCollection();
   if (view === 'bag') renderBag();
 }
 
 async function boot() {
   state.collection = await collectionStore.list();
-  state.companion = await companionStore.get();
+  state.lineage = await companionStore.getLineage();
+  state.companion = selectedOrganism(state.lineage);
   const profile = store.get('profile');
-  if (profile?.onboarded && !state.companion) {
+  if (!state.lineage) {
+    const legacy = await companionStore.get();
+    if (legacy?.frames?.length) {
+      const migrated = await migrateLegacyProfile(legacy, { now: profile?.startedAt || Date.now() });
+      state.lineage = createLineage(migrated);
+      state.companion = migrated;
+      await companionStore.setLineage(state.lineage);
+    }
+  }
+  if (profile?.onboarded && !state.lineage) {
     const starter = state.collection.find((creature) => creature.capture?.kind === 'starter') || state.collection[0];
     if (starter) {
-      state.companion = await createCompanionProfile(starter, {
+      const migrated = await createCompanionProfile(starter, {
         label: starter.capture?.memoryLabel || 'the moment I began',
         thought: '',
         sources: starter.capture?.sources || starter.genome.moment?.sources || ['time', 'place', 'weather'],
         mediaReleased: true
-      }, { now: profile.startedAt || Date.now(), companionId: profile.companionId || null });
-      await companionStore.set(state.companion);
+      }, { now: profile.startedAt || Date.now() });
+      state.lineage = createLineage(migrated);
+      state.companion = migrated;
+      await companionStore.setLineage(state.lineage);
     }
   }
   renderCollection();
   renderBag();
   renderCompanion();
+  renderLineage();
   updateCounts();
   updateThemeButton();
 
@@ -1166,6 +1345,8 @@ $('recenter').addEventListener('click', () => map.recenter());
 $('capture-moment-button').addEventListener('click', openMomentCapture);
 $('companion-capture-button').addEventListener('click', openMomentCapture);
 $('companion-lantern-button').addEventListener('click', () => openInLantern(currentCompanion(state.companion)));
+$('companion-freeze-button').addEventListener('click', toggleSelectedRappid);
+$('drill-button').addEventListener('click', drillParallelOffspring);
 $('capture-close').addEventListener('click', () => closeDialog($('capture-dialog')));
 $('capture-form').addEventListener('submit', captureMomentFromForm);
 $('refresh-button').addEventListener('click', async (event) => {
@@ -1212,8 +1393,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-window.__RAPP_GO__ = {
-  version: '2.1.0',
+window.__RAGO__ = {
+  version: '2.2.0',
   get state() { return state; },
   get map() { return map; },
   refresh: () => initializeWorld(state.location, { refresh: true }),
@@ -1221,5 +1402,6 @@ window.__RAPP_GO__ = {
   openPlace,
   switchView
 };
+window.__RAPP_GO__ = window.__RAGO__;
 
 await boot();

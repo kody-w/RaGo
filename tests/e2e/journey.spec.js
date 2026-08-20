@@ -15,16 +15,19 @@ async function preparePage(page) {
   return consoleErrors;
 }
 
-test('demo journey captures a thought and splices it into the permanent 3D companion', async ({ page }) => {
+test('demo journey chooses a starter RAPPID, evolves it, and grows parallel offspring', async ({ page }) => {
   const consoleErrors = await preparePage(page);
   await page.goto('/?demo=1&reset=1');
 
-  await expect(page.getByRole('heading', { name: /Capture a moment. Grow one companion/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Welcome to RaGo. Meet the RAPPIDs/i })).toBeVisible();
+  await expect(page.getByText('Identity stays', { exact: true })).toBeVisible();
+  await expect(page.getByText('Frames remember', { exact: true })).toBeVisible();
+  await expect(page.getByText('Offspring branch', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Enter the demo field' }).click();
-  await expect(page.getByRole('heading', { name: /What should your companion begin by remembering/i })).toBeVisible();
-  await page.getByRole('button', { name: 'Call three possible companions' }).click();
-  await expect(page.getByRole('heading', { name: /Choose the one that feels like the memory/i })).toBeVisible();
-  await page.getByRole('button', { name: /^Choose / }).first().click();
+  await expect(page.getByRole('heading', { name: /What should your starter RAPPID begin by remembering/i })).toBeVisible();
+  await page.getByRole('button', { name: 'Reveal three starter RAPPIDs' }).click();
+  await expect(page.getByRole('heading', { name: /Choose your starter RAPPID/i })).toBeVisible();
+  await page.getByRole('button', { name: /^Choose .* as my starter/ }).first().click();
 
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#weather-pill')).toContainText('19°');
@@ -48,7 +51,11 @@ test('demo journey captures a thought and splices it into the permanent 3D compa
   await expect(page.locator('#place-note')).toContainText(/gives|full/i);
   await page.getByRole('button', { name: 'Close place' }).click();
 
-  const foundingGenome = await page.evaluate(() => window.__RAPP_GO__.state.companion.frames.at(-1).creature.id);
+  const founding = await page.evaluate(() => ({
+    genome: window.__RAGO__.state.companion.frames.at(-1).payload.creature.id,
+    rappid: window.__RAGO__.state.companion.rappid,
+    frame: window.__RAGO__.state.companion.head
+  }));
   await page.getByRole('button', { name: /Capture/i }).first().click();
   await expect(page.getByRole('heading', { name: 'Capture this moment' })).toBeVisible();
   await page.getByLabel('Name this memory').fill('the laugh on the platform');
@@ -58,23 +65,53 @@ test('demo journey captures a thought and splices it into the permanent 3D compa
   await page.getByRole('button', { name: /Throw when the ring is small/i }).click();
   await expect(page.locator('#encounter-dialog')).toHaveAttribute('data-catch-state', 'caught');
   await expect(page.locator('#encounter-result')).toContainText('Caught');
-  await page.getByRole('button', { name: 'Splice into companion' }).click();
+  await page.getByRole('button', { name: 'Splice into selected RAPPID' }).click();
 
-  await expect(page.getByRole('heading', { name: /Splice .* into your companion/i })).toBeVisible();
-  await page.getByLabel('Form').check();
-  await page.getByLabel('Motion').check();
+  await expect(page.getByRole('heading', { name: /Splice .* into your selected RAPPID/i })).toBeVisible();
+  await page.locator('#splice-dialog input[name="splice-trait"][value="form"]').check();
+  await page.locator('#splice-dialog input[name="splice-trait"][value="motion"]').check();
   await page.getByRole('button', { name: 'Absorb selected traits' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Your companion' })).toBeVisible();
-  await expect(page.locator('#companion-generation')).toContainText('generation 1');
+  await expect(page.getByRole('heading', { name: 'Your RAPPID' })).toBeVisible();
+  await expect(page.locator('#companion-generation')).toContainText('generation 0 · frame 1');
   await expect(page.locator('#companion-frame-count')).toHaveText('2');
-  const evolvedGenome = await page.evaluate(() => window.__RAPP_GO__.state.companion.frames.at(-1).creature.id);
-  expect(evolvedGenome).not.toBe(foundingGenome);
+  const evolved = await page.evaluate(() => ({
+    genome: window.__RAGO__.state.companion.frames.at(-1).payload.creature.id,
+    rappid: window.__RAGO__.state.companion.rappid,
+    frame: window.__RAGO__.state.companion.head
+  }));
+  expect(evolved.genome).not.toBe(founding.genome);
+  expect(evolved.rappid).toBe(founding.rappid);
+  expect(evolved.frame).not.toBe(founding.frame);
   expect(await page.locator('#companion-creature').evaluate((canvas) => Boolean(canvas.getContext('webgl2')))).toBe(true);
 
-  await page.getByRole('button', { name: /Moments 2/i }).click();
+  await page.getByRole('button', { name: /Lineage 1/i }).click();
+  await expect(page.getByRole('heading', { name: 'Your RAPPID lineage' })).toBeVisible();
+  await page.getByRole('button', { name: 'Drill from selected head' }).click();
+  await expect(page.locator('.rappid-card')).toHaveCount(4);
+  await expect(page.locator('.lineage-generation')).toHaveCount(2);
+  const lineage = await page.evaluate(() => ({
+    count: window.__RAGO__.state.lineage.organisms.length,
+    generations: [...new Set(window.__RAGO__.state.lineage.organisms.map((organism) => organism.generation))],
+    selected: window.__RAGO__.state.companion.rappid,
+    parent: window.__RAGO__.state.companion.parent.rappid
+  }));
+  expect(lineage.count).toBe(4);
+  expect(lineage.generations).toEqual([0, 1]);
+  expect(lineage.selected).not.toBe(founding.rappid);
+  expect(lineage.parent).toBe(founding.rappid);
 
-  await expect(page.getByRole('heading', { name: 'Captured moments' })).toBeVisible();
+  await page.getByRole('button', { name: /RAPPID 1/i }).click();
+  await page.getByRole('button', { name: 'Freeze at latest head' }).click();
+  await expect(page.getByRole('button', { name: 'Wake from latest head' })).toBeVisible();
+  expect(await page.evaluate(() => window.__RAGO__.state.companion.status)).toBe('frozen');
+  await page.getByRole('button', { name: 'Wake from latest head' }).click();
+  await expect(page.getByRole('button', { name: 'Freeze at latest head' })).toBeVisible();
+  expect(await page.evaluate(() => window.__RAGO__.state.companion.status)).toBe('awake');
+
+  await page.getByRole('button', { name: /Caught 2/i }).click();
+
+  await expect(page.getByRole('heading', { name: 'Captured RAPPIDs' })).toBeVisible();
   await expect(page.locator('.collection-card')).toHaveCount(2);
   await page.locator('.collection-card').last().getByRole('button', { name: /Share/i }).click();
   await expect(page.locator('#share-url')).toHaveValue(/#creature=/u);
@@ -113,12 +150,12 @@ test('live permission flow coarse-grains weather and place requests', async ({ p
   });
 
   await page.goto('/?reset=1');
-  await page.getByRole('button', { name: 'Use my location' }).click();
-  await expect(page.getByRole('heading', { name: /What should your companion begin by remembering/i })).toBeVisible();
+  await page.getByRole('button', { name: 'Enter my local field' }).click();
+  await expect(page.getByRole('heading', { name: /What should your starter RAPPID begin by remembering/i })).toBeVisible();
   await page.getByLabel('A thought, phrase, or person').fill('the first warm morning after a long winter');
-  await page.getByRole('button', { name: 'Call three possible companions' }).click();
-  await expect(page.getByRole('heading', { name: /Choose the one that feels like the memory/i })).toBeVisible();
-  await page.getByRole('button', { name: /^Choose / }).first().click();
+  await page.getByRole('button', { name: 'Reveal three starter RAPPIDs' }).click();
+  await expect(page.getByRole('heading', { name: /Choose your starter RAPPID/i })).toBeVisible();
+  await page.getByRole('button', { name: /^Choose .* as my starter/ }).first().click();
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
   await expect(page.locator('#weather-pill')).toContainText('24° · clear sky');

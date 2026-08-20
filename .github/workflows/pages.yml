@@ -1,4 +1,4 @@
-name: Verify and deploy GitHub Pages
+name: Verify and deploy RaGo
 
 on:
   push:

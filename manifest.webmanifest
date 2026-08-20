@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "rapp·go — capture a moment",
-  "short_name": "rapp·go",
-  "description": "Capture a thought, picture, sound, place, time, or sky as a living being, then splice those traits into one permanent companion.",
+  "name": "RaGo — RAPPID Go",
+  "short_name": "RaGo",
+  "description": "Meet RAPPIDs, choose a starter, capture moments, and grow parallel local-first lineages.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

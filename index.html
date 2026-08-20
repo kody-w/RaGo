@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="Capture a thought, picture, sound, place, time, or sky as a living moment—and let those moments evolve one permanent companion.">
+  <meta name="description" content="Meet living RAPPIDs, choose a starter, capture moments, and grow parallel lineages in a private 3D field.">
   <meta name="theme-color" content="#e9f0e8">
   <meta name="color-scheme" content="light dark">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="stylesheet" href="styles.css">
-  <title>rapp·go — capture a moment</title>
+  <title>RaGo — RAPPID Go</title>
   <script>
     try {
-      const saved = JSON.parse(localStorage.getItem('rapp-go-v2.theme') || '"light"');
+      const saved = JSON.parse(localStorage.getItem('rago-v2.theme') || localStorage.getItem('rapp-go-v2.theme') || '"light"');
       document.documentElement.dataset.theme = saved === 'dark' ? 'dark' : 'light';
     } catch { document.documentElement.dataset.theme = 'light'; }
   </script>
@@ -22,9 +22,9 @@
   <a class="skip-link" href="#nearby-title">Skip the map</a>
   <div id="app" class="app-shell" data-view="explore">
     <header class="topbar">
-      <button class="brand" id="about-button" type="button" aria-label="About rapp go">
+      <button class="brand" id="about-button" type="button" aria-label="About RaGo">
         <span class="brand-mark" aria-hidden="true">◉</span>
-        <span><strong>rapp</strong>·go<small>moment companions</small></span>
+        <span><strong>Ra</strong>Go<small>RAPPID Go</small></span>
       </button>
       <div class="topbar-status" aria-live="polite">
         <span class="weather-pill" id="weather-pill"><span aria-hidden="true">◌</span> finding the sky</span>
@@ -69,43 +69,77 @@
 
       <section class="view library-view companion-view" id="companion-view" aria-labelledby="companion-title" hidden>
         <div class="page-heading companion-heading">
-          <p class="eyebrow">one identity · every change remembered</p>
-          <h1 id="companion-title">Your companion</h1>
-          <p>The same companion grows as captured moments lend it form, color, and motion. Its identity stays; its body tells the history.</p>
+          <p class="eyebrow">one RAPPID · every frame remembered</p>
+          <h1 id="companion-title">Your RAPPID</h1>
+          <p>The selected RAPPID grows as captured moments lend it form, color, and motion. Its mint-once identity stays; its body stream tells the history.</p>
         </div>
         <article class="companion-hero" id="companion-hero">
-          <div class="companion-stage"><canvas id="companion-creature" width="520" height="520" aria-label="Your evolving 3D companion"></canvas></div>
+          <div class="companion-stage"><canvas id="companion-creature" width="520" height="520" aria-label="Your evolving 3D RAPPID"></canvas></div>
           <div class="companion-copy">
             <p class="rarity-label" id="companion-generation">generation 0</p>
-            <h2 id="companion-name">Your companion</h2>
-            <p id="companion-memory">Waiting for a memory to begin with.</p>
+            <h2 id="companion-name">Your starter RAPPID</h2>
+            <p id="companion-memory">Waiting for a private founding memory.</p>
             <div class="source-pills" id="companion-sources"></div>
             <dl class="companion-facts">
-              <div><dt>identity</dt><dd id="companion-id">—</dd></div>
+              <div><dt>RAPPID</dt><dd id="companion-id">—</dd></div>
               <div><dt>current genome</dt><dd id="companion-genome">—</dd></div>
-              <div><dt>remembered forms</dt><dd id="companion-frame-count">0</dd></div>
+              <div><dt>verified frames</dt><dd id="companion-frame-count">0</dd></div>
             </dl>
             <div class="companion-actions">
-              <button class="primary-button" id="companion-capture-button" type="button">Capture a moment to change together</button>
+              <button class="primary-button" id="companion-capture-button" type="button">Capture a moment to evolve this RAPPID</button>
               <button class="secondary-button" id="companion-lantern-button" type="button">Open this form in rapp·lantern 3D</button>
+              <button class="secondary-button" id="companion-freeze-button" type="button">Freeze at latest head</button>
             </div>
           </div>
         </article>
         <section class="companion-section" aria-labelledby="donors-title">
-          <div class="section-heading"><div><p class="eyebrow">caught moments become traits</p><h2 id="donors-title">Moments ready to splice</h2></div></div>
+          <div class="section-heading"><div><p class="eyebrow">caught RAPPIDs become trait donors</p><h2 id="donors-title">RAPPIDs ready to splice</h2></div></div>
           <div class="donor-strip" id="companion-donors"></div>
         </section>
         <section class="companion-section" aria-labelledby="history-title">
-          <div class="section-heading"><div><p class="eyebrow">append-only memory</p><h2 id="history-title">Evolution history</h2></div></div>
+          <div class="section-heading"><div><p class="eyebrow">append-only body stream</p><h2 id="history-title">RAPP/1 frame history</h2></div></div>
           <div class="evolution-timeline" id="evolution-timeline"></div>
+        </section>
+      </section>
+
+      <section class="view library-view lineage-view" id="lineage-view" aria-labelledby="lineage-title" hidden>
+        <div class="page-heading">
+          <p class="eyebrow">one ancestor · parallel living dimensions</p>
+          <h1 id="lineage-title">Your RAPPID lineage</h1>
+          <p>Every offspring starts from one exact parent head, receives a fresh RAPPID and honest alleles, then continues on its own append-only stream. Nothing overwrites.</p>
+        </div>
+        <div class="lineage-summary" id="lineage-summary"></div>
+        <article class="drill-card">
+          <div>
+            <p class="eyebrow">quantum drill</p>
+            <h2>Hatch parallel offspring</h2>
+            <p>Select the dimensions allowed to vary. Private thoughts are never copied into offspring frames.</p>
+          </div>
+          <fieldset class="dimension-picker" id="dimension-picker">
+            <legend>Mutation dimensions</legend>
+            <label><input type="checkbox" value="identity" name="offspring-dimension"><span><strong>Identity</strong><small>fresh RAPPID and voice</small></span></label>
+            <label><input type="checkbox" value="memory" name="offspring-dimension" checked><span><strong>Memory</strong><small>public engram influence</small></span></label>
+            <label><input type="checkbox" value="capabilities" name="offspring-dimension"><span><strong>Capabilities</strong><small>eyes, appendages, reach</small></span></label>
+            <label><input type="checkbox" value="context" name="offspring-dimension" checked><span><strong>Context</strong><small>palette and environment</small></span></label>
+            <label><input type="checkbox" value="purpose" name="offspring-dimension" checked><span><strong>Purpose</strong><small>gait, tempo, direction</small></span></label>
+            <label><input type="checkbox" value="embodiment" name="offspring-dimension"><span><strong>Embodiment</strong><small>proportions and hallmark form</small></span></label>
+          </fieldset>
+          <div class="drill-actions">
+            <label><span>Parallel offspring</span><select id="offspring-count"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label>
+            <button class="primary-button" id="drill-button" type="button">Drill from selected head</button>
+          </div>
+        </article>
+        <section class="lineage-board" aria-labelledby="lineage-board-title">
+          <div class="section-heading"><div><p class="eyebrow">independent latest heads</p><h2 id="lineage-board-title">Generations</h2></div></div>
+          <div class="lineage-scroll"><div class="lineage-graph" id="lineage-graph"></div></div>
         </section>
       </section>
 
       <section class="view library-view" id="collection-view" aria-labelledby="collection-title" hidden>
         <div class="page-heading">
           <p class="eyebrow">kept on this device</p>
-          <h1 id="collection-title">Captured moments</h1>
-          <p>Thoughts, pictures, sounds, places, times, and weather become content-verified beings. Any one can lend traits to your companion.</p>
+          <h1 id="collection-title">Captured RAPPIDs</h1>
+          <p>Thoughts, pictures, sounds, places, times, and weather become content-verified beings. Any one can lend public traits to your selected RAPPID.</p>
         </div>
         <div class="collection-grid" id="collection-grid"></div>
       </section>
@@ -126,8 +160,9 @@
 
     <nav class="app-nav" aria-label="Main views">
       <button class="nav-button active" type="button" data-view-target="explore" aria-current="page"><span aria-hidden="true">⌖</span><span>Explore</span></button>
-      <button class="nav-button" type="button" data-view-target="companion"><span aria-hidden="true">◉</span><span>Companion</span><em id="generation-count">0</em></button>
-      <button class="nav-button" type="button" data-view-target="collection"><span aria-hidden="true">✦</span><span>Moments</span><em id="collection-count">0</em></button>
+      <button class="nav-button" type="button" data-view-target="companion"><span aria-hidden="true">◉</span><span>RAPPID</span><em id="generation-count">0</em></button>
+      <button class="nav-button" type="button" data-view-target="lineage"><span aria-hidden="true">∞</span><span>Lineage</span><em id="lineage-count">0</em></button>
+      <button class="nav-button" type="button" data-view-target="collection"><span aria-hidden="true">✦</span><span>Caught</span><em id="collection-count">0</em></button>
       <button class="nav-button" type="button" data-view-target="bag"><span aria-hidden="true">◇</span><span>Satchel</span><em id="bag-count">0</em></button>
     </nav>
   </div>
@@ -158,8 +193,8 @@
       <button class="primary-button throw-button" id="throw-button" type="button">Throw when the ring is small</button>
       <div class="encounter-actions" id="encounter-actions" hidden>
         <button class="secondary-button" id="encounter-journal" type="button">Open moments</button>
-        <button class="primary-button" id="encounter-splice" type="button">Splice into companion</button>
-        <button class="secondary-button" id="encounter-share" type="button">Share moment</button>
+        <button class="primary-button" id="encounter-splice" type="button">Splice into selected RAPPID</button>
+        <button class="secondary-button" id="encounter-share" type="button">Share RAPPID</button>
       </div>
     </div>
   </dialog>
@@ -193,10 +228,10 @@
     <div class="modal-card splice-card">
       <button class="close-button" id="splice-close" type="button" aria-label="Close splice">×</button>
       <p class="eyebrow">identity stays · traits evolve</p>
-      <h2 id="splice-title">Splice a moment into your companion</h2>
+      <h2 id="splice-title">Splice a captured RAPPID into your selected RAPPID</h2>
       <p id="splice-copy">Choose what this captured moment is allowed to change.</p>
       <div class="splice-preview">
-        <div><canvas id="splice-primary" width="190" height="190" aria-label="Current companion"></canvas><small>your companion</small></div>
+        <div><canvas id="splice-primary" width="190" height="190" aria-label="Current RAPPID"></canvas><small>selected RAPPID</small></div>
         <span aria-hidden="true">＋</span>
         <div><canvas id="splice-donor" width="190" height="190" aria-label="Captured moment donor"></canvas><small id="splice-donor-name">caught moment</small></div>
       </div>
@@ -206,7 +241,7 @@
         <label><input type="checkbox" name="splice-trait" value="surface" checked><strong>Surface</strong><span>palette, pattern, glow</span></label>
         <label><input type="checkbox" name="splice-trait" value="motion"><strong>Motion</strong><span>breath, sway, pulse</span></label>
       </fieldset>
-      <p class="splice-note">This appends a new evolution frame. The companion id and every earlier form remain intact.</p>
+      <p class="splice-note">This appends a new RAPP/1 frame. The RAPPID and every earlier form remain intact.</p>
       <button class="primary-button" id="splice-apply" type="button">Absorb selected traits</button>
     </div>
   </dialog>
@@ -231,9 +266,9 @@
       <button class="close-button" id="share-close" type="button" aria-label="Close share dialog">×</button>
       <div class="share-glyph" aria-hidden="true">↗</div>
       <p class="eyebrow">verified gift</p>
-      <h2 id="share-title">Send this creature</h2>
+      <h2 id="share-title">Send this RAPPID</h2>
       <p>Anyone with this link can verify the public traits and keep their own copy. Your private memory never travels.</p>
-      <label class="share-label" for="share-url">Creature link</label>
+      <label class="share-label" for="share-url">RAPPID link</label>
       <input id="share-url" class="share-url" type="text" readonly>
       <div class="share-actions">
         <button class="secondary-button" id="copy-share" type="button">Copy link</button>
@@ -245,10 +280,10 @@
 
   <dialog class="modal sheet-modal" id="import-dialog" aria-labelledby="import-title">
     <div class="modal-card import-card">
-      <button class="close-button" id="import-close" type="button" aria-label="Close received creature">×</button>
-      <canvas id="import-creature" width="220" height="220" aria-label="Received creature"></canvas>
+      <button class="close-button" id="import-close" type="button" aria-label="Close received RAPPID">×</button>
+      <canvas id="import-creature" width="220" height="220" aria-label="Received RAPPID"></canvas>
       <p class="verified-pill" id="import-status">✓ genome verified on this device</p>
-      <h2 id="import-title">A creature arrived</h2>
+      <h2 id="import-title">A RAPPID arrived</h2>
       <p id="import-copy">Its weather memory is intact.</p>
       <button class="primary-button" id="import-keep" type="button">Keep in my journal</button>
     </div>
@@ -258,15 +293,15 @@
     <div class="modal-card about-card">
       <button class="close-button" id="about-close" type="button" aria-label="Close about dialog">×</button>
       <div class="about-mark" aria-hidden="true">◉</div>
-      <p class="eyebrow">a quiet field game</p>
-      <h2 id="about-title">A moment can become a companion.</h2>
-      <p>rapp·go can translate a thought, picture, sound, place, time, or sky into a deterministic 3D being. Caught moments can change one permanent companion without replacing its identity.</p>
+      <p class="eyebrow">RAPPID Go</p>
+      <h2 id="about-title">Meet a RAPPID. Grow a lineage.</h2>
+      <p>RaGo translates a thought, picture, sound, place, time, or sky into a deterministic 3D RAPPID. Catch public traits, evolve one individual, or hatch independent offspring without erasing any parent.</p>
       <ul class="feature-list">
         <li><span>✓</span> no account or backend</li>
         <li><span>✓</span> installable and offline-ready</li>
         <li><span>✓</span> open-source and content-verified</li>
       </ul>
-      <a class="secondary-button link-button" href="https://github.com/kody-w/rapp-go" target="_blank" rel="noopener">View the public source</a>
+      <a class="secondary-button link-button" href="https://github.com/kody-w/RaGo" target="_blank" rel="noopener">View the public source</a>
       <button class="danger-button" id="reset-button" type="button">Reset local adventure</button>
     </div>
   </dialog>
