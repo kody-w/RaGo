@@ -196,8 +196,8 @@ a { color: inherit; }
 .danger-button { margin-top: 10px; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); background: transparent; }
 
 .onboarding-modal { width: 100vw; height: 100dvh; }
-.onboarding-card { display: flex; flex-direction: column; justify-content: center; width: 100%; min-height: 100%; max-height: none; padding: max(26px, env(safe-area-inset-top)) clamp(22px, 6vw, 70px) max(26px, env(safe-area-inset-bottom)); border: 0; border-radius: 0; background: radial-gradient(circle at 78% 16%, rgba(130, 204, 174, 0.3), transparent 28%), radial-gradient(circle at 18% 74%, rgba(97, 143, 212, 0.22), transparent 34%), var(--surface-solid); }
-.onboarding-wrap { width: min(950px, 100%); margin: auto; text-align: center; }
+.onboarding-card { display: flex; flex-direction: column; justify-content: flex-start; width: 100%; min-height: 100%; max-height: 100dvh; overflow-y: auto; padding: max(26px, env(safe-area-inset-top)) clamp(22px, 6vw, 70px) max(26px, env(safe-area-inset-bottom)); border: 0; border-radius: 0; background: radial-gradient(circle at 78% 16%, rgba(130, 204, 174, 0.3), transparent 28%), radial-gradient(circle at 18% 74%, rgba(97, 143, 212, 0.22), transparent 34%), var(--surface-solid); }
+.onboarding-wrap { flex: 0 0 auto; width: min(950px, 100%); margin: auto; padding-block: 12px; text-align: center; }
 .onboarding-orbit { position: relative; display: grid; place-items: center; width: 138px; height: 138px; margin: 0 auto 24px; border: 1px solid var(--line); border-radius: 50%; background: radial-gradient(circle, var(--accent-soft), transparent 68%); }
 .onboarding-orbit::before, .onboarding-orbit::after { content: ""; position: absolute; inset: -11px; border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 50%; animation: slow-turn 11s linear infinite; }
 .onboarding-orbit::after { inset: 14px -24px; border-style: dashed; animation-direction: reverse; animation-duration: 16s; }
