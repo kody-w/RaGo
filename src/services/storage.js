@@ -1,6 +1,7 @@
 import { DEFAULT_INVENTORY, normalizeInventory } from '../game/economy.js';
 
-export const STORAGE_PREFIX = 'rapp-go-v2.';
+export const STORAGE_PREFIX = 'rago-v2.';
+const LEGACY_STORAGE_PREFIX = 'rapp-go-v2.';
 const DATABASE_NAME = 'rapp-go-v2';
 const STORE_NAME = 'creatures';
 const COMPANION_DATABASE_NAME = 'rapp-go-companion-v2';
@@ -14,7 +15,8 @@ export class JsonStore {
 
   get(key, fallback = null) {
     try {
-      const raw = this.storage?.getItem(`${STORAGE_PREFIX}${key}`);
+      const raw = this.storage?.getItem(`${STORAGE_PREFIX}${key}`)
+        ?? this.storage?.getItem(`${LEGACY_STORAGE_PREFIX}${key}`);
       if (raw != null) return JSON.parse(raw);
     } catch {}
     return this.memory.has(key) ? this.memory.get(key) : fallback;
@@ -132,6 +134,7 @@ export class CompanionStore {
   constructor(indexedDB = globalThis.indexedDB) {
     this.indexedDB = indexedDB;
     this.memory = null;
+    this.lineageMemory = null;
     this.databasePromise = null;
   }
 
@@ -184,6 +187,36 @@ export class CompanionStore {
     });
     return profile;
   }
+
+  async getLineage() {
+    const database = await this.database();
+    if (!database) return this.lineageMemory || null;
+    const value = await new Promise((resolve) => {
+      try {
+        const request = database.transaction(COMPANION_STORE_NAME, 'readonly').objectStore(COMPANION_STORE_NAME).get('lineage');
+        request.onsuccess = () => resolve(request.result?.value || null);
+        request.onerror = () => resolve(null);
+      } catch { resolve(null); }
+    });
+    if (value) this.lineageMemory = value;
+    return value || this.lineageMemory || null;
+  }
+
+  async setLineage(lineage) {
+    this.lineageMemory = lineage;
+    const database = await this.database();
+    if (!database) return lineage;
+    await new Promise((resolve) => {
+      try {
+        const transaction = database.transaction(COMPANION_STORE_NAME, 'readwrite');
+        transaction.objectStore(COMPANION_STORE_NAME).put({ key: 'lineage', value: lineage });
+        transaction.oncomplete = resolve;
+        transaction.onerror = resolve;
+        transaction.onabort = resolve;
+      } catch { resolve(); }
+    });
+    return lineage;
+  }
 }
 
 export async function resetStoredApp(storage = globalThis.localStorage, indexedDB = globalThis.indexedDB) {
@@ -191,7 +224,7 @@ export async function resetStoredApp(storage = globalThis.localStorage, indexedD
     const keys = [];
     for (let index = 0; index < storage.length; index += 1) {
       const key = storage.key(index);
-      if (key?.startsWith(STORAGE_PREFIX)) keys.push(key);
+      if (key?.startsWith(STORAGE_PREFIX) || key?.startsWith(LEGACY_STORAGE_PREFIX)) keys.push(key);
     }
     for (const key of keys) storage.removeItem(key);
   } catch {}

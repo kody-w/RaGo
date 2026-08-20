@@ -1,14 +1,14 @@
 {
   "schema": "rapp-go-index/2.0",
-  "name": "rapp-go",
-  "version": "2.1.0",
+  "name": "RaGo",
+  "version": "2.2.0",
   "status": "live",
-  "description": "A private moment field where thoughts, pictures, sounds, places, time, and weather evolve one permanent 3D companion.",
-  "homepage": "https://kody-w.github.io/rapp-go/",
-  "repository": "https://github.com/kody-w/rapp-go",
+  "description": "RAPPID Go: a private 3D field for choosing a starter and growing parallel RAPPID lineages.",
+  "homepage": "https://kody-w.github.io/RaGo/",
+  "repository": "https://github.com/kody-w/RaGo",
   "entry": "index.html",
   "demo": "?demo=1&reset=1",
   "field_guide": "api/v1/species.json",
   "species": 151,
-  "features": ["pwa", "offline", "3d", "companion", "splicing", "thought", "picture", "sound", "geolocation", "weather", "openstreetmap", "content-addressed", "no-backend"]
+  "features": ["pwa", "offline", "3d", "rappid", "starters", "rapp-1-frames", "parallel-offspring", "freeze-wake", "splicing", "thought", "picture", "sound", "geolocation", "weather", "openstreetmap", "content-addressed", "no-backend"]
 }

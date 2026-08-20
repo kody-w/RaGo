@@ -1,9 +1,9 @@
 {
   "schema": "rapp-go-status/2.0",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "ok": true,
   "deployment": "github-pages",
-  "modes": ["live-location", "fixed-location", "deterministic-demo", "multimodal-moment", "companion-evolution"],
+  "modes": ["live-location", "fixed-location", "deterministic-demo", "starter-rappid", "multimodal-moment", "rappid-evolution", "parallel-offspring", "freeze-wake"],
   "storage": ["indexeddb", "localstorage"],
   "backend": false,
   "species": 151

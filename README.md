@@ -1,24 +1,28 @@
-# rapp·go
+# RaGo
 
-[![rapp·go v2](https://img.shields.io/endpoint?url=https://kody-w.github.io/rapp-go/api/v1/badge.json)](https://kody-w.github.io/rapp-go/)
+[![RaGo v2](https://img.shields.io/endpoint?url=https://kody-w.github.io/RaGo/api/v1/badge.json)](https://kody-w.github.io/RaGo/)
 
-A private, no-backend moment field. A thought, picture, sound, place, time, or sky becomes a living 3D being; caught moments can lend traits to one permanent companion without replacing its identity.
+**RAPPID Go.** A private, no-backend 3D field for meeting RAPPIDs, choosing a starter, capturing moments, evolving individuals, and growing parallel offspring lineages.
 
-- **Live app:** https://kody-w.github.io/rapp-go/
-- **Deterministic demo:** https://kody-w.github.io/rapp-go/?demo=1&reset=1
+- **Live app:** https://kody-w.github.io/RaGo/
+- **Deterministic demo:** https://kody-w.github.io/RaGo/?demo=1&reset=1
 
 ## What was rebuilt
 
-Version 2.1 is a from-scratch, standalone implementation. It preserves the original moment/genome/companion idea while removing every monorepo-relative dependency.
+Version 2.2 is the standalone RAPPID lineage release. It preserves the moment/genome field while making RAPPID identity, frames, starters, and offspring the explicit game.
 
 The new repository includes:
 
 - a low-angle, perspective Three.js world that keeps real CARTO/OpenStreetMap streets as its geographic ground
 - actual animated 3D creature rigs standing at geographic positions on the map—no flat creature markers
 - deterministic moment genomes derived from any combination of thought, picture, sound, time, place, mood, and weather
-- a private memory ceremony that creates one permanent companion; raw image/audio bytes are reduced to traits and released
-- trait-wise companion evolution: captured beings can splice form, surface, and/or motion into the current body
-- an append-only, content-hashed evolution history with non-destructive reversion and a stable companion id
+- an original field-guide introduction that teaches identity, frames, and offspring before the player chooses one of three starter RAPPIDs
+- a private starter bond; raw image/audio bytes are reduced to traits and released
+- canonical mint-once RAPPID identities with honest coat, tempo, voice, and glow alleles
+- exact eleven-key RAPP/1 body frames with per-organism latest-head pointers
+- trait-wise RAPPID evolution: captured beings can splice form, surface, and/or motion into the selected body
+- Quantum Drill branching across identity, memory, capabilities, context, purpose, and embodiment
+- parallel offspring with fresh RAPPIDs and alleles, shared ancestor-object proof, explicit parent provenance, and independent freeze/wake streams
 - real-time Three.js/WebGL geometry with perspective, flat-shaded meshes, dynamic lights, ground shadows, orbit controls, breathing, gait, and articulated parts
 - **151 original starting species** across twelve grounded body plans, each with a stable field-guide number and animation rig
 - moment-derived individual traits—proportions, markings, finish, asymmetry, crest, tail, ears, gait, and a hallmark feature—so same-species catches are not clones
@@ -31,7 +35,7 @@ The new repository includes:
 - service-worker offline shell caching and an installable web manifest
 - unit and browser-level end-to-end coverage in CI
 
-The deployed machine-readable field guide is available at [`api/v1/species.json`](https://kody-w.github.io/rapp-go/api/v1/species.json).
+The deployed machine-readable field guide is available at [`api/v1/species.json`](https://kody-w.github.io/RaGo/api/v1/species.json).
 
 ## Privacy model
 
@@ -66,14 +70,14 @@ npm run build
 | `?demo=1` | Fixed weather, location, places, time, and guaranteed first demo catch |
 | `?fix=LAT,LNG` | Use a desktop-friendly fixed coordinate after onboarding |
 | `?t=EPOCH_MS` | Pin the 30-minute creature field bucket |
-| `?reset=1` | Clear only rapp·go's local browser state before boot |
+| `?reset=1` | Clear only RaGo's local browser state before boot |
 
 ## Architecture
 
 ```text
 src/
   app.js                  UI state machine and complete journey
-  companion/              stable identity, evolution frames, splice/revert
+  companion/              RAPPID identity, frames, splice/revert, offspring
   data/                   151 deterministic species blueprints
   game/                   catch, economy, and spawn rules
   lib/                    moment signals, geo, RNG, identity, sharing, Lantern export
@@ -84,4 +88,4 @@ tests/
   e2e/                    mobile and desktop browser journeys
 ```
 
-Map tiles are © OpenStreetMap contributors and © CARTO. Public place data is © OpenStreetMap contributors. Code is available under the [MIT License](LICENSE).
+Legacy `rapp-go-*` schema and storage tokens remain readable to preserve existing public creatures and local saves; new product metadata and UI use RaGo. Map tiles are © OpenStreetMap contributors and © CARTO. Public place data is © OpenStreetMap contributors. Code is available under the [MIT License](LICENSE).

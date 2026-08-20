@@ -1,9 +1,9 @@
 {
-  "name": "rapp-go",
-  "version": "2.1.0",
+  "name": "rago",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
-  "description": "A private moment field where thoughts, pictures, sounds, places, time, and weather evolve one permanent 3D companion.",
+  "description": "RAPPID Go: a private 3D field for meeting RAPPIDs, choosing a starter, and growing parallel lineages.",
   "scripts": {
     "build": "node scripts/build.mjs",
     "serve": "node tests/server.mjs",

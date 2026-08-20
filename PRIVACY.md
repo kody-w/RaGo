@@ -1,6 +1,6 @@
 # Privacy
 
-rapp·go has no application backend, account system, analytics, advertising, or telemetry.
+RaGo has no application backend, account system, analytics, advertising, or telemetry.
 
 ## Moment inputs
 
@@ -17,8 +17,10 @@ CARTO receives ordinary map-tile coordinates for the map currently in view. Open
 
 ## Local data
 
-The journal is stored in IndexedDB. Theme, satchel, cooldown, coarse cached weather/place data, and the last map position are stored locally in the browser. Clearing site data removes them.
+The journal and RAPPID lineages are stored in IndexedDB. Theme, satchel, cooldown, coarse cached weather/place data, and the last map position are stored locally in the browser. Clearing site data removes them.
+
+Private founding memories are stored beside the local RAPPID profile and are never copied into RAPP/1 body frames. Offspring inherit public ancestor and parent references, not private thoughts, media, or exact locations.
 
 ## Sharing
 
-A creature link contains its public procedural genome and content id. It does not contain an account, device identifier, exact GPS coordinate, or the player's location history. Recipients verify the content id locally before they can keep it.
+A RAPPID link contains its public procedural genome and content id. It does not contain an account, device identifier, exact GPS coordinate, private memory, or the player's location history. Recipients verify the content id locally before they can keep it.

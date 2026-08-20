@@ -27,6 +27,8 @@ await cp(join(root, 'node_modules/three/build/three.module.js'), join(output, 'v
 await cp(join(root, 'node_modules/three/build/three.core.js'), join(output, 'vendor/three.core.js'));
 await writeFile(join(output, 'api/v1/species.json'), `${JSON.stringify({
   schema: 'rapp-go-species-catalog/1.0',
+  product: 'RaGo',
+  version: '2.2.0',
   count: SPECIES_CATALOG.length,
   species: SPECIES_CATALOG
 }, null, 2)}\n`);

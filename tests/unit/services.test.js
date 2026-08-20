@@ -59,8 +59,11 @@ test('place requests use a geohash-cell box and normalize Overpass data', async 
 test('JSON storage survives malformed backing values through safe fallbacks', () => {
   const storage = new MemoryStorage();
   storage.setItem('rapp-go-v2.bad', '{broken');
+  storage.setItem('rapp-go-v2.legacy', JSON.stringify({ kept: true }));
   const store = new JsonStore(storage);
   assert.equal(store.get('bad', 'fallback'), 'fallback');
+  assert.deepEqual(store.get('legacy'), { kept: true });
   store.set('good', { ok: true });
   assert.deepEqual(store.get('good'), { ok: true });
+  assert.equal(storage.getItem('rago-v2.good'), JSON.stringify({ ok: true }));
 });
