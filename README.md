@@ -1,5 +1,9 @@
 # RaGo
 
+<!-- rapp1:network-header:start -->
+[![RAPP/1](https://kody-w.github.io/rapp-hive-public/portfolio/badges/RaGo.svg)](https://github.com/kody-w/rapp-hive-public/blob/main/portfolio/repos/RaGo.md) · **New to RAPP?** [Start here: get your Brainstem →](https://github.com/kody-w/rapp-installer#start-here)
+<!-- rapp1:network-header:end -->
+
 [![RaGo v2](https://img.shields.io/endpoint?url=https://kody-w.github.io/RaGo/api/v1/badge.json)](https://kody-w.github.io/RaGo/)
 
 **RAPPID Go.** A private, no-backend 3D field for meeting RAPPIDs, choosing a starter, capturing moments, evolving individuals, and growing parallel offspring lineages.
