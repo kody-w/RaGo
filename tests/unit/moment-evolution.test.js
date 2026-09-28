@@ -97,7 +97,11 @@ test('picture, sound, thought, weather, place, and time all enter the moment gen
   assert.doesNotMatch(JSON.stringify(creature), /station goodbye|minute to last/u);
 });
 
-const identityBytes = (offset) => Uint8Array.from({ length: 16 }, (_value, index) => (offset + index * 13) & 255);
+// Fixture UUIDs are real UUIDv4 octets (version 4, variant 0b10), as a §6.2 keyless mint requires.
+const identityBytes = (offset) => Uint8Array.from({ length: 16 }, (_value, index) => {
+  const byte = (offset + index * 13) & 255;
+  return index === 6 ? byte & 0x0f | 0x40 : index === 8 ? byte & 0x3f | 0x80 : byte;
+});
 
 test('splicing changes selected traits while preserving RAPPID identity and RAPP/1 history', async () => {
   const foundingMemory = memory();
