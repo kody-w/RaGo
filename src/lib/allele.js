@@ -1,6 +1,7 @@
 // Honest visual alleles derived only from a mint-once RAPPID tail.
 
-import { hashBytes, rappidTail } from './rapp.js';
+import { sha256Hex } from './creature.js';
+import { rappidTail } from './rapp.js';
 
 export const TRAITS = Object.freeze([
   Object.freeze({ key: 'coat', bits: 8 }),
@@ -21,7 +22,8 @@ export async function allelesForRappid(rappid) {
   const tail = rappidTail(rappid);
   const output = {};
   for (const trait of TRAITS) {
-    const digest = await hashBytes(`rapp/1:allele:${trait.key}`, new TextEncoder().encode(tail));
+    // An app-level derivation, not a §5 address: the same SHA-256 octets as before, outside the RAPP/1 tag set.
+    const digest = await sha256Hex(`rapp/1:allele:${trait.key}\n${tail}`);
     const value = parseInt(digest.slice(0, trait.bits / 4), 16);
     output[trait.key] = {
       value,
